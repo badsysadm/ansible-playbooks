@@ -1,0 +1,5 @@
+install_prefix: /usr/local
+GO_VERSION: 1.12.4
+ARCH: linux-amd64
+ATHENS_VERSION: 0.2.0
+ATHENS_TLS: False

@@ -1,0 +1,16 @@
+[Unit]
+Description=Proxy server for the Go Modules download API
+After=network.target
+StartLimitBurst=30
+
+[Service]
+Type=simple
+PIDFile=/var/run/athens.pid
+User=athens
+Group=athens
+ExecStart={{ install_prefix }}/bin/athens -config_file {{ install_prefix }}/etc/athens/config.toml
+Restart=always
+RestartSec=180
+
+[Install]
+WantedBy=multi-user.target
