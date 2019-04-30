@@ -1,0 +1,31 @@
+listen_address = ":9252"
+concurrent = 2
+check_interval = 0
+log_level = "warning"
+
+[[runners]]
+  name = "{{ RUNNER_NAME }}"
+  url = "{{ RUNNER_SRV }}"
+  token = RUNNER_TOKEN
+  executor = "docker"
+  [runners.docker]
+    tls_verify = false
+    image = "docker:dind"
+    privileged = {{ RUNNER_PRIVILEGED }}
+    memory = "6415.6m"
+    cpus = "3.2"
+    disable_cache = false
+    volumes = [{% for item in RUNNER_VOLUMES %}"{{ item }}"{% if loop.last %}{% else %},{% endif %}{% endfor %}]
+    shm_size = 0
+    dns = [{% for item in RUNNER_DNS %}"{{ item }}"{% if loop.last %}{% else %},{% endif %}{% endfor %}]
+  [runners.cache]
+    Type = "s3"
+    Path = ""
+    Shared = true
+    [runners.cache.s3]
+      ServerAddress = "{{ RUNNER_S3_HOST }}"
+      AccessKey = "{{ RUNNER_S3_ACCESS_KEY }}"
+      SecretKey = "{{ RUNNER_S3_SECRET_KEY }}"
+      BucketName = "{{ RUNNER_S3_BUCKET }}"
+#      BucketLocation = "eu-west-1"
+      Insecure = false

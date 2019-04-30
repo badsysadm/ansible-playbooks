@@ -1,0 +1,22 @@
+install_prefix: /usr/local
+GO_VERSION: 1.12.4
+ARCH: linux-amd64
+RUNNER_VERSION: 11.7.0
+#RUNNER_TLS: false
+RUNNER_NAME: "{{ ansible_fqdn }}"
+RUNNER_SRV: "gitlab"
+#RUNNER_NEXUS: ""
+RUNNER_EXECUTOR: "shell"
+RUNNER_PRIVILEGED: "false"
+RUNNER_VOLUMES:
+  - "/var/run/docker.sock:/var/run/docker.sock"
+  - "/cache"
+RUNNER_DNS:
+  - "8.8.8.8"
+  - "1.1.1.1"
+RUNNER_S3_ACCESS_KEY: AccessKey
+RUNNER_S3_SECRET_KEY: SecretKey
+RUNNER_S3_BUCKET: "gitlab-cache"
+RUNNER_S3_HOST: "minio:9000"
+DOCKER_STORAGE: "overlay2"
+DOCKER_AUTH: ""

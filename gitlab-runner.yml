@@ -1,0 +1,13 @@
+### Gitlab-Runner
+### The open source project that is used to run your jobs and send the results back to GitLab
+### https://docs.gitlab.com/
+
+---
+- hosts: "osrunner-4"
+  become: true
+  roles:
+   - 'roles/gitlab-runner'
+
+  vars_prompt:
+   - name: "RUNNER_REGTOKEN"
+     prompt: "Add registration token from https://EXAMPLE_HOST/admin/runners"
