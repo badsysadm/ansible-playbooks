@@ -1,0 +1,115 @@
+- name: Install required dependencies
+  apt:
+     name: "{{ packages }}"
+     state: latest
+  vars:
+     packages:
+     - curl
+     - ca-certificates
+     - dirmngr
+     - gnupg
+     - dirmngr
+     - apt-transport-https
+     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Add an Apt signing key
+  apt_key:
+    url: https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
+    state: present
+
+- name: Add an apt key by id from a keyserver
+  apt_key:
+    keyserver: 'hkps.pool.sks-keyservers.net'
+    id: '0x6B73A36E6026DFCA'
+
+- apt_repository:
+    repo: "deb https://dl.bintray.com/rabbitmq-erlang/debian {{ ansible_lsb.codename }} erlang-21.x"
+    state: present
+    filename: bintray.rabbitmq.list
+
+- apt_repository:
+    repo: 'deb https://dl.bintray.com/rabbitmq/debian {{ ansible_lsb.codename }} main'
+    state: present
+    filename: bintray.rabbitmq.list
+
+- name: Install required dependencies
+  apt:
+     name: "{{ packages }}"
+     state: latest
+  vars:
+     packages:
+     - erlang-base
+     - erlang-asn1
+     - erlang-crypto
+     - erlang-eldap
+     - erlang-inets
+     - erlang-mnesia
+     - erlang-os-mon
+     - erlang-parsetools
+     - erlang-public-key
+     - erlang-runtime-tools
+     - erlang-snmp
+     - erlang-ssl
+     - erlang-syntax-tools
+     - erlang-tools
+     - erlang-xmerl
+     - rabbitmq-server
+     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Template rabbitmq-server modern config
+  template:
+    src: "rabbitmq.conf"
+    dest: "/etc/rabbitmq/rabbitmq.conf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Template rabbitmq-server oldstyle config
+  template:
+    src: "advanced.config"
+    dest: "/etc/rabbitmq/advanced.config"
+    owner: root
+    group: root
+    mode: 0644 
+
+- name: Template rabbitmq-server oldstyle config
+  template:
+    src: "enabled_plugins"
+    dest: "/etc/rabbitmq/enabled_plugins"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Template rabbitmq-server modern config
+  template:
+    src: "rabbitmq-env.conf"
+    dest: "/etc/rabbitmq/rabbitmq-env.conf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: "join_cluster"
+  raw: rm -rfv /var/lib/rabbitmq/*
+
+- name: Template cookies
+  template:
+    src: "erlang.cookie"
+    dest: "/var/lib/rabbitmq/.erlang.cookie"
+    owner: rabbitmq
+    group: rabbitmq
+    mode: 0600
+
+- name: Enable and start rabbitmq-server systemd service
+  systemd:
+    name: rabbitmq-server.service
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: "join_cluster"
+  raw: rabbitmqctl set_policy ha-all "" '{"ha-mode":"all","ha-sync-mode":"automatic"}'
+  when: role == 'init'
+
+- name: "join_cluster"
+  raw: rabbitmqctl stop_app && rabbitmqctl reset && rabbitmqctl join_cluster k8s-rabbitmq01@k8s-rabbitmq01 && rabbitmqctl start_app
+  when: role != 'init'
